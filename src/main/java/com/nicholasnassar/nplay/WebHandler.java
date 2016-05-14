@@ -1,5 +1,6 @@
 package com.nicholasnassar.nplay;
 
+import org.apache.commons.validator.routines.UrlValidator;
 import spark.ModelAndView;
 import spark.Spark;
 import spark.template.jade.JadeTemplateEngine;
@@ -38,7 +39,11 @@ public class WebHandler {
                 return "";
             }
 
-            play.setUrl(url);
+            UrlValidator validator = new UrlValidator(new String[]{"http", "https"});
+
+            if (validator.isValid(url)) {
+                play.setUrl(url);
+            }
 
             return "";
         });
