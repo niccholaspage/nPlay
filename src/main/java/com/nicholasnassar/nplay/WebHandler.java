@@ -43,14 +43,14 @@ public class WebHandler {
             res.type("text/event-stream;charset=UTF-8");
             res.header("Cache-Control", "no-cache");
 
-            return "retry: 500\ndata: {\"url\": \"" + play.getUrl() + "\", \"seconds\": " + play.getCurrentTime() / 1000 +
-                    ", \"playing\":" + play.isPlaying() + "}\n\n";
+            return "retry: 500\ndata: {\"url\": \"" + play.getUrl() + "\", \"seconds\": " + play.getCurrentTime()
+                    + ", \"playing\":" + play.isPlaying() + "}\n\n";
         });
 
         get("/seek", (req, res) -> {
             double currentTime = Double.parseDouble(req.queryParams("currentTime"));
 
-            play.setCurrentTime(currentTime * 1000);
+            play.setCurrentTime(currentTime);
 
             return "";
         });

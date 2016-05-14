@@ -25,7 +25,7 @@ public class nPlay {
 
         scheduler.scheduleAtFixedRate(() -> {
             if (isPlaying()) {
-                setCurrentTime(getCurrentTime() + 1);
+                setCurrentTime(getCurrentTime() + 0.001);
             }
         }, 0, 1, TimeUnit.MILLISECONDS);
 
