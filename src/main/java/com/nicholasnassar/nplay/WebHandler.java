@@ -34,6 +34,10 @@ public class WebHandler {
         post("/play-url", (req, res) -> {
             String url = req.queryParams("url");
 
+            if (url == null) {
+                return "";
+            }
+
             play.setUrl(url);
 
             return "";
@@ -48,7 +52,13 @@ public class WebHandler {
         });
 
         get("/seek", (req, res) -> {
-            double currentTime = Double.parseDouble(req.queryParams("currentTime"));
+            String time = req.queryParams("currentTime");
+
+            if (time == null) {
+                return "";
+            }
+
+            double currentTime = Double.parseDouble(time);
 
             play.setCurrentTime(currentTime);
 
