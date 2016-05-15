@@ -33,11 +33,7 @@ function toggle(video) {
     video.paused ? video.play() : video.pause();
 }
 
-window.onload = function () {
-    var currentPage = window.location.pathname;
-
-    $("a[href='" + currentPage +"']").last().parent().attr('class', 'active');
-
+window.addEventListener("load", function () {
     var video = document.getElementById('myvideo');
 
     var url = document.getElementById('url');
@@ -66,4 +62,4 @@ window.onload = function () {
     video.addEventListener('seeked', function () {
         $.get("seek", {currentTime: this.currentTime});
     });
-};
+});
