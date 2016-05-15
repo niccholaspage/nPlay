@@ -1,25 +1,34 @@
 package com.nicholasnassar.nplay;
 
+import com.machinepublishers.jbrowserdriver.JBrowserDriver;
+import com.machinepublishers.jbrowserdriver.Settings;
+import com.machinepublishers.jbrowserdriver.Timezone;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
-import org.jsoup.Jsoup;
-import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
-import org.jsoup.select.Elements;
+import org.openqa.selenium.By;
+import org.openqa.selenium.WebElement;
 import spark.ModelAndView;
 import spark.Spark;
 import spark.template.jade.JadeTemplateEngine;
 
-import java.io.IOException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static spark.Spark.*;
 
 public class WebHandler {
+    private final JBrowserDriver browser;
+
+    private final Map<String, LinkHandler> handlers;
+
     public WebHandler(nPlay play) {
+        handlers = new HashMap<>();
+
+        browser = new JBrowserDriver(Settings.builder().timezone(Timezone.AMERICA_NEWYORK).build());
+
         port(8999);
 
         staticFileLocation("/web");
@@ -76,30 +85,46 @@ public class WebHandler {
                     }
 
                     try {
-                        Document document = Jsoup.connect(url).get();
+                        browser.get(url);
 
-                        Elements elements = document.body().getElementsByTag("video");
+                        try {
+                            URL tempUrl = new URL(url);
 
-                        Element first = elements.first();
+                            String baseUrl = tempUrl.getProtocol() + "://" + tempUrl.getAuthority() + "/";
+
+                            for (Map.Entry<String, LinkHandler> handler : handlers.entrySet()) {
+                                if (baseUrl.contains(handler.getKey())) {
+                                    play.setUrl(handler.getValue().getVideo(browser));
+
+                                    return;
+                                }
+                            }
+                        } catch (Exception e) {
+
+                        }
+
+                        List<WebElement> elements = browser.findElements(By.tagName("video"));
+
+                        WebElement first = elements.get(0);
 
                         if (first != null) {
                             String source = null;
 
-                            if (first.hasAttr("source")) {
-                                source = first.attr("source");
+                            if (first.getAttribute("src") != null) {
+                                source = first.getAttribute("src");
 
                                 play.setUrl(getSource(validator.isValid(source), url, source));
                             } else {
-                                Element sourceTag = first.getElementsByTag("source").first();
+                                WebElement sourceTag = first.findElements(By.tagName("source")).get(0);
 
                                 if (sourceTag != null) {
-                                    source = sourceTag.attr("src");
+                                    source = sourceTag.getAttribute("src");
 
                                     play.setUrl(getSource(validator.isValid(source), url, source));
                                 }
                             }
                         }
-                    } catch (IOException e) {
+                    } catch (Exception e) {
                         e.printStackTrace();
                     }
                 }
