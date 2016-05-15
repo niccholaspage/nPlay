@@ -1,10 +1,18 @@
 package com.nicholasnassar.nplay;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 import spark.ModelAndView;
 import spark.Spark;
 import spark.template.jade.JadeTemplateEngine;
 
+import java.io.IOException;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -39,10 +47,61 @@ public class WebHandler {
                 return "";
             }
 
+            if (url.isEmpty()) {
+                play.setUrl("");
+
+                return "";
+            }
+
             UrlValidator validator = new UrlValidator(new String[]{"http", "https"});
 
             if (validator.isValid(url)) {
-                play.setUrl(url);
+                new Thread(() -> {
+                    try {
+                        HttpURLConnection.setFollowRedirects(false);
+
+                        HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
+
+                        con.setRequestMethod("HEAD");
+
+                        if (con.getContentType().startsWith("video")) {
+                            play.setUrl(url);
+
+                            return;
+                        }
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+
+                    try {
+                        Document document = Jsoup.connect(url).get();
+
+                        Elements elements = document.body().getElementsByTag("video");
+
+                        Element first = elements.first();
+
+                        if (first != null) {
+                            String source = null;
+
+                            if (first.hasAttr("source")) {
+                                source = first.attr("source");
+
+                                play.setUrl(getSource(validator.isValid(source), url, source));
+                            } else {
+                                Element sourceTag = first.getElementsByTag("source").first();
+
+                                if (sourceTag != null) {
+                                    source = sourceTag.attr("src");
+
+                                    play.setUrl(getSource(validator.isValid(source), url, source));
+                                }
+                            }
+                        }
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+                ).start();
             }
 
             return "";
@@ -69,6 +128,24 @@ public class WebHandler {
 
             return "";
         });
+    }
+
+    public String getSource(boolean valid, String url, String source) {
+        if (!valid) {
+            int baseCount = StringUtils.countMatches(url, "../") + 1;
+
+            while (baseCount > 0) {
+                url = url.substring(0, url.lastIndexOf("/"));
+
+                baseCount--;
+            }
+
+            url += "/" + source;
+
+            return url;
+        } else {
+            return source;
+        }
     }
 
     public void stop() {
