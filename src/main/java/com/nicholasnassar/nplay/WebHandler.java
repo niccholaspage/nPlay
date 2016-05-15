@@ -28,6 +28,7 @@ public class WebHandler {
 
         get("/", (req, res) -> new ModelAndView(emptyMap, "index"), new JadeTemplateEngine());
         get("/about", (req, res) -> new ModelAndView(emptyMap, "about"), new JadeTemplateEngine());
+        get("/contact", (req, res) -> new ModelAndView(emptyMap, "contact"), new JadeTemplateEngine());
 
         get("/play", (req, res) -> {
             play.setPlaying(true);
