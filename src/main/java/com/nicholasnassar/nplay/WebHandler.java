@@ -27,6 +27,7 @@ public class WebHandler {
         Map<String, String> emptyMap = new HashMap<>();
 
         get("/", (req, res) -> new ModelAndView(emptyMap, "index"), new JadeTemplateEngine());
+        get("/about", (req, res) -> new ModelAndView(emptyMap, "about"), new JadeTemplateEngine());
 
         get("/play", (req, res) -> {
             play.setPlaying(true);

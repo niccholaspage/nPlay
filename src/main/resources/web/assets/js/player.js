@@ -34,9 +34,13 @@ function toggle(video) {
 }
 
 window.onload = function () {
-    var video = document.getElementById("myvideo");
+    var currentPage = window.location.pathname;
 
-    var url = document.getElementById("url");
+    $("a[href='" + currentPage +"']").last().parent().attr('class', 'active');
+
+    var video = document.getElementById('myvideo');
+
+    var url = document.getElementById('url');
 
     url.onkeydown = function (event) {
         if (event.which == 13) {
