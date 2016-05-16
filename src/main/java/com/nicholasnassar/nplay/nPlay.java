@@ -123,7 +123,7 @@ public class nPlay {
 
                     con.setRequestMethod("HEAD");
 
-                    if (con.getContentType().startsWith("video")) {
+                    if (con.getContentType().contains("video/")) {
                         setUrl(url);
 
                         return;

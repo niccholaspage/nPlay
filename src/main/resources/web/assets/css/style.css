@@ -5,6 +5,10 @@ body {
   padding: 40px 15px;
   text-align: center;
 }
+.urlbox {
+  width: 40%;
+  margin: auto;
+}
 #myvideo {
   width: 90%;
   height: auto;
