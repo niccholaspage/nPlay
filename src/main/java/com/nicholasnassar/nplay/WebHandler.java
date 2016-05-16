@@ -1,34 +1,16 @@
 package com.nicholasnassar.nplay;
 
-import com.machinepublishers.jbrowserdriver.JBrowserDriver;
-import com.machinepublishers.jbrowserdriver.Settings;
-import com.machinepublishers.jbrowserdriver.Timezone;
-import org.apache.commons.lang3.StringUtils;
-import org.apache.commons.validator.routines.UrlValidator;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
 import spark.ModelAndView;
 import spark.Spark;
 import spark.template.jade.JadeTemplateEngine;
 
-import java.net.HttpURLConnection;
-import java.net.URL;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import static spark.Spark.*;
 
 public class WebHandler {
-    private final JBrowserDriver browser;
-
-    private final Map<String, LinkHandler> handlers;
-
     public WebHandler(nPlay play) {
-        handlers = new HashMap<>();
-
-        browser = new JBrowserDriver(Settings.builder().timezone(Timezone.AMERICA_NEWYORK).build());
-
         port(8999);
 
         staticFileLocation("/web");
@@ -54,82 +36,7 @@ public class WebHandler {
         post("/play-url", (req, res) -> {
             String url = req.queryParams("url");
 
-            if (url == null) {
-                return "";
-            }
-
-            if (url.isEmpty()) {
-                play.setUrl("");
-
-                return "";
-            }
-
-            UrlValidator validator = new UrlValidator(new String[]{"http", "https"});
-
-            if (validator.isValid(url)) {
-                new Thread(() -> {
-                    try {
-                        HttpURLConnection.setFollowRedirects(false);
-
-                        HttpURLConnection con = (HttpURLConnection) new URL(url).openConnection();
-
-                        con.setRequestMethod("HEAD");
-
-                        if (con.getContentType().startsWith("video")) {
-                            play.setUrl(url);
-
-                            return;
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-
-                    try {
-                        browser.get(url);
-
-                        try {
-                            URL tempUrl = new URL(url);
-
-                            String baseUrl = tempUrl.getProtocol() + "://" + tempUrl.getAuthority() + "/";
-
-                            for (Map.Entry<String, LinkHandler> handler : handlers.entrySet()) {
-                                if (baseUrl.contains(handler.getKey())) {
-                                    play.setUrl(handler.getValue().getVideo(browser));
-
-                                    return;
-                                }
-                            }
-                        } catch (Exception e) {
-
-                        }
-
-                        List<WebElement> elements = browser.findElements(By.tagName("video"));
-
-                        WebElement first = elements.get(0);
-
-                        if (first != null) {
-                            String source = null;
-
-                            if (first.getAttribute("src") != null) {
-                                source = first.getAttribute("src");
-
-                                play.setUrl(getSource(validator.isValid(source), url, source));
-                            } else {
-                                WebElement sourceTag = first.findElements(By.tagName("source")).get(0);
-
-                                if (sourceTag != null) {
-                                    source = sourceTag.getAttribute("src");
-
-                                    play.setUrl(getSource(validator.isValid(source), url, source));
-                                }
-                            }
-                        }
-                    } catch (Exception e) {
-                        e.printStackTrace();
-                    }
-                }
-                ).start();
-            }
+            play.fetchUrl(url);
 
             return "";
         });
@@ -155,24 +62,6 @@ public class WebHandler {
 
             return "";
         });
-    }
-
-    public String getSource(boolean valid, String url, String source) {
-        if (!valid) {
-            int baseCount = StringUtils.countMatches(url, "../") + 1;
-
-            while (baseCount > 0) {
-                url = url.substring(0, url.lastIndexOf("/"));
-
-                baseCount--;
-            }
-
-            url += "/" + source;
-
-            return url;
-        } else {
-            return source;
-        }
     }
 
     public void stop() {
