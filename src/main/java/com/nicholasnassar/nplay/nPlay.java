@@ -1,5 +1,9 @@
 package com.nicholasnassar.nplay;
 
+import com.machinepublishers.jbrowserdriver.JBrowserDriver;
+import com.machinepublishers.jbrowserdriver.Settings;
+import com.machinepublishers.jbrowserdriver.Timezone;
+
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -10,6 +14,8 @@ public class nPlay {
 
     private final Map<String, Channel> channels;
 
+    private final AsyncConstruction<JBrowserDriver> browser;
+
     private final Random random;
 
     private final WebHandler webHandler;
@@ -18,10 +24,19 @@ public class nPlay {
 
     private final static int CHANNEL_ID_LENGTH = 7;
 
+    private final static int CHANNEL_LIMIT = 5;
+
     private nPlay() {
         channels = new HashMap<>();
 
-        channels.put("main", new Channel(true));
+        browser = new AsyncConstruction<JBrowserDriver>() {
+            @Override
+            public JBrowserDriver create() {
+                return new JBrowserDriver(Settings.builder().timezone(Timezone.AMERICA_NEWYORK).build());
+            }
+        };
+
+        channels.put("main", new Channel(browser.get(), true));
 
         random = new Random();
 
@@ -73,7 +88,11 @@ public class nPlay {
 
             String command = split[0];
 
-            if (command.equalsIgnoreCase("quit")) {
+            if (command.equalsIgnoreCase("channels")) {
+                log("Channels:");
+
+                channels.keySet().forEach(this::log);
+            } else if (command.equalsIgnoreCase("quit")) {
                 System.exit(0);
             }
         }
@@ -88,23 +107,31 @@ public class nPlay {
     }
 
     public String createNewChannel() {
-        String id = "";
-
-        while (hasChannel(id)) {
-            StringBuilder builder = new StringBuilder(CHANNEL_ID_LENGTH);
-
-            for (int i = 0; i < CHANNEL_ID_LENGTH; i++) {
-                builder.append(CHANNEL_ID_CHARACTERS.charAt(random.nextInt(CHANNEL_ID_CHARACTERS.length())));
-            }
-
-            id = builder.toString();
+        if (channels.size() >= CHANNEL_LIMIT) {
+            return null;
         }
 
-        Channel channel = new Channel();
+        String id = generateChannelId();
+
+        while (hasChannel(id)) {
+            id = generateChannelId();
+        }
+
+        Channel channel = new Channel(browser.get());
 
         channels.put(id, channel);
 
         return id;
+    }
+
+    private String generateChannelId() {
+        StringBuilder builder = new StringBuilder(CHANNEL_ID_LENGTH);
+
+        for (int i = 0; i < CHANNEL_ID_LENGTH; i++) {
+            builder.append(CHANNEL_ID_CHARACTERS.charAt(random.nextInt(CHANNEL_ID_CHARACTERS.length())));
+        }
+
+        return builder.toString();
     }
 
     private void log(String message) {

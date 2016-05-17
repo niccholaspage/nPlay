@@ -25,12 +25,12 @@ public class Channel {
 
     private static final int SECONDS_BEFORE_REMOVAL = 1 * 60;
 
-    public Channel() {
-        this(false);
+    public Channel(JBrowserDriver browser) {
+        this(browser, false);
     }
 
-    public Channel(boolean indefinite) {
-        browser = new JBrowserDriver(Settings.builder().timezone(Timezone.AMERICA_NEWYORK).build());
+    public Channel(JBrowserDriver browser, boolean indefinite) {
+        this.browser = browser;
 
         if (indefinite) {
             secondsBeforeRemoval = -1;

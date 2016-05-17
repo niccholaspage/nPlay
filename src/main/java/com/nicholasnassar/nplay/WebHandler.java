@@ -20,7 +20,15 @@ public class WebHandler {
 
         get("/", (req, res) -> new ModelAndView(emptyMap, "index"), new JadeTemplateEngine());
         get("/channel/create", (req, res) -> {
-            res.redirect("/channel/" + play.createNewChannel());
+            String channelId = play.createNewChannel();
+
+            if (channelId == null) {
+                res.redirect("/");
+
+                return "";
+            }
+
+            res.redirect("/channel/" + channelId);
 
             return "";
         });
