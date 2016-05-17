@@ -1,5 +1,5 @@
 if (typeof(EventSource) !== "undefined") {
-    var source = new EventSource('play-status');
+    var source = new EventSource('/play-status');
     source.onmessage = function (event) {
         var obj = JSON.parse(event.data);
 
@@ -34,32 +34,42 @@ function toggle(video) {
 }
 
 window.addEventListener("load", function () {
+    var cookie = document.cookie.substr(document.cookie.indexOf("=") + 1);
+
     var video = document.getElementById('myvideo');
 
     var url = document.getElementById('url');
 
+    var channel = document.getElementById('channel');
+
+    var channelURL = window.location.origin + "/channel/" + cookie;
+
+    channel.href = channelURL;
+
+    channel.text = channelURL;
+
     url.onkeydown = function (event) {
         if (event.which == 13) {
-            $.post("play-url", {url: url.value});
+            $.post("/play-url", {url: url.value});
             this.value = ""
         }
     };
 
-    document.onkeypress = function (event) {
+    document.addEventListener('keypress', function (event) {
         if (event.which == 32 && document.activeElement !== url) {
             toggle(video);
         }
-    };
+    });
 
     video.addEventListener('play', function () {
-        $.get("play");
+        $.get("/play");
     });
 
     video.addEventListener('pause', function () {
-        $.get("pause");
+        $.get("/pause");
     });
 
     video.addEventListener('seeked', function () {
-        $.get("seek", {currentTime: this.currentTime});
+        $.get("/seek", {currentTime: this.currentTime});
     });
 });

@@ -1,0 +1,15 @@
+extends base.jade
+
+block scripts
+    script(src='/assets/js/player.min.js')
+
+block content
+    h1 nPlay
+    p Welcome to nPlay
+    video#myvideo(controls, onclick='toggle(this)')
+    p
+        div.urlbox.input-group
+            span#addon.input-group-addon URL
+            input#url.form-control(type='text', placeholder='Direct video link or YouTube!', aria-describedby='addon')
+    p= 'Share this link with your friends: '
+        a#channel(href='#') Channel Link

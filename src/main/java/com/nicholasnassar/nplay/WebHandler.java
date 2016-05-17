@@ -4,6 +4,7 @@ import spark.ModelAndView;
 import spark.Spark;
 import spark.template.jade.JadeTemplateEngine;
 
+import javax.servlet.http.Cookie;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -18,17 +19,63 @@ public class WebHandler {
         Map<String, String> emptyMap = new HashMap<>();
 
         get("/", (req, res) -> new ModelAndView(emptyMap, "index"), new JadeTemplateEngine());
+        get("/channel/create", (req, res) -> {
+            res.redirect("/channel/" + play.createNewChannel());
+
+            return "";
+        });
+        get("/channel/:id", (req, res) -> {
+            String id = req.params(":id");
+
+            if (!play.hasChannel(id)) {
+                res.redirect("/");
+
+                return "";
+            }
+
+            try {
+                Cookie cookie = new Cookie("channel", id);
+                cookie.setPath("/");
+                cookie.setMaxAge(-1);
+                cookie.setSecure(false);
+                cookie.setHttpOnly(false);
+                res.raw().addCookie(cookie);
+            } catch (Exception e) {
+                e.printStackTrace();
+            }
+
+            res.redirect("/player");
+
+            return "";
+        });
+        get("/player", (req, res) -> {
+            if (!play.hasChannel(req.cookie("channel"))) {
+                res.redirect("/");
+
+                return null;
+            }
+
+            return new ModelAndView(emptyMap, "player");
+        }, new JadeTemplateEngine());
         get("/about", (req, res) -> new ModelAndView(emptyMap, "about"), new JadeTemplateEngine());
         get("/contact", (req, res) -> new ModelAndView(emptyMap, "contact"), new JadeTemplateEngine());
 
         get("/play", (req, res) -> {
-            play.setPlaying(true);
+            Channel channel = accessChannel(play, req.cookie("channel"));
+
+            if (channel != null) {
+                channel.setPlaying(true);
+            }
 
             return "";
         });
 
         get("/pause", (req, res) -> {
-            play.setPlaying(false);
+            Channel channel = accessChannel(play, req.cookie("channel"));
+
+            if (channel != null) {
+                channel.setPlaying(false);
+            }
 
             return "";
         });
@@ -36,7 +83,11 @@ public class WebHandler {
         post("/play-url", (req, res) -> {
             String url = req.queryParams("url");
 
-            play.fetchUrl(url);
+            Channel channel = accessChannel(play, req.cookie("channel"));
+
+            if (channel != null) {
+                channel.fetchUrl(url);
+            }
 
             return "";
         });
@@ -45,8 +96,14 @@ public class WebHandler {
             res.type("text/event-stream;charset=UTF-8");
             res.header("Cache-Control", "no-cache");
 
-            return "retry: 500\ndata: {\"url\": \"" + play.getUrl() + "\", \"seconds\": " + play.getCurrentTime()
-                    + ", \"playing\":" + play.isPlaying() + "}\n\n";
+            Channel channel = accessChannel(play, req.cookie("channel"));
+
+            if (channel != null) {
+                return "retry: 500\ndata: {\"url\": \"" + channel.getUrl() + "\", \"seconds\": " + channel.getCurrentTime()
+                        + ", \"playing\":" + channel.isPlaying() + "}\n\n";
+            } else {
+                return "retry:500\ndata: {}\n\n";
+            }
         });
 
         get("/seek", (req, res) -> {
@@ -56,12 +113,28 @@ public class WebHandler {
                 return "";
             }
 
-            double currentTime = Double.parseDouble(time);
+            Channel channel = play.getChannel(req.cookie("channel"));
 
-            play.setCurrentTime(currentTime);
+            if (channel != null) {
+                double currentTime = Double.parseDouble(time);
+
+                channel.setCurrentTime(currentTime);
+            }
 
             return "";
         });
+    }
+
+    public Channel accessChannel(nPlay play, String id) {
+        Channel channel = play.getChannel(id);
+
+        if (channel != null) {
+            channel.resetSecondsLeft();
+
+            return channel;
+        }
+
+        return null;
     }
 
     public void stop() {
