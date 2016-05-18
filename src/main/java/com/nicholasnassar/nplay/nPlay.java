@@ -36,7 +36,7 @@ public class nPlay {
             }
         };
 
-        channels.put("main", new Channel(browser.get(), true));
+        channels.put("main", new Channel(this, browser.get(), true));
 
         random = new Random();
 
@@ -117,7 +117,7 @@ public class nPlay {
             id = generateChannelId();
         }
 
-        Channel channel = new Channel(browser.get());
+        Channel channel = new Channel(this, browser.get());
 
         channels.put(id, channel);
 
@@ -148,5 +148,9 @@ public class nPlay {
 
     public static void main(String[] args) {
         new nPlay();
+    }
+
+    public Map<String, LinkHandler> getHandlers() {
+        return handlers;
     }
 }

@@ -1,8 +1,6 @@
 package com.nicholasnassar.nplay;
 
 import com.machinepublishers.jbrowserdriver.JBrowserDriver;
-import com.machinepublishers.jbrowserdriver.Settings;
-import com.machinepublishers.jbrowserdriver.Timezone;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.openqa.selenium.By;
@@ -11,8 +9,11 @@ import org.openqa.selenium.WebElement;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 
 public class Channel {
+    private final nPlay play;
+
     private final JBrowserDriver browser;
 
     private String url;
@@ -25,11 +26,13 @@ public class Channel {
 
     private static final int SECONDS_BEFORE_REMOVAL = 1 * 60;
 
-    public Channel(JBrowserDriver browser) {
-        this(browser, false);
+    public Channel(nPlay play, JBrowserDriver browser) {
+        this(play, browser, false);
     }
 
-    public Channel(JBrowserDriver browser, boolean indefinite) {
+    public Channel(nPlay play, JBrowserDriver browser, boolean indefinite) {
+        this.play = play;
+
         this.browser = browser;
 
         if (indefinite) {
@@ -99,12 +102,12 @@ public class Channel {
                 try {
                     browser.get(url);
 
-                    /*try {
+                    try {
                         URL tempUrl = new URL(url);
 
                         String baseUrl = tempUrl.getProtocol() + "://" + tempUrl.getAuthority() + "/";
 
-                        for (Map.Entry<String, LinkHandler> handler : handlers.entrySet()) {
+                        for (Map.Entry<String, LinkHandler> handler : play.getHandlers().entrySet()) {
                             if (baseUrl.contains(handler.getKey())) {
                                 setUrl(handler.getValue().getVideo(browser));
 
@@ -113,7 +116,7 @@ public class Channel {
                         }
                     } catch (Exception e) {
 
-                    }*/
+                    }
 
                     List<WebElement> elements = browser.findElements(By.tagName("video"));
 
