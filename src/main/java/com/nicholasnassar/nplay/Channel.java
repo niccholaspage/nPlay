@@ -79,6 +79,9 @@ public class Channel {
             return;
         }
 
+        //Empty video for now.
+        setUrl("");
+
         UrlValidator validator = new UrlValidator(new String[]{"http", "https"});
 
         if (validator.isValid(url)) {

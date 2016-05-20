@@ -3,6 +3,8 @@ package com.nicholasnassar.nplay;
 import com.machinepublishers.jbrowserdriver.JBrowserDriver;
 import com.machinepublishers.jbrowserdriver.Settings;
 import com.machinepublishers.jbrowserdriver.Timezone;
+import com.nicholasnassar.nplay.web.WebHandler;
+import com.nicholasnassar.nplay.web.WebSocketHandler;
 
 import java.util.*;
 import java.util.concurrent.Executors;
@@ -26,7 +28,11 @@ public class nPlay {
 
     private final static int CHANNEL_LIMIT = 5;
 
+    public static nPlay play;
+
     private nPlay() {
+        play = this;
+
         channels = new HashMap<>();
 
         browser = new AsyncConstruction<JBrowserDriver>() {
@@ -51,6 +57,13 @@ public class nPlay {
         scheduler.scheduleAtFixedRate(() -> channels.values().stream().filter(Channel::isPlaying).forEach(channel -> channel.setCurrentTime(channel.getCurrentTime() + 0.001)), 0, 1, TimeUnit.MILLISECONDS);
 
         Timer timer = new Timer();
+
+        timer.schedule(new TimerTask() {
+            @Override
+            public void run() {
+                WebSocketHandler.sendStatusUpdate();
+            }
+        }, 0, 500);
 
         timer.schedule(new TimerTask() {
             @Override
@@ -132,6 +145,37 @@ public class nPlay {
         }
 
         return builder.toString();
+    }
+
+
+    public void play(Channel channel) {
+        channel.setPlaying(true);
+    }
+
+    public void pause(Channel channel) {
+        channel.setPlaying(false);
+    }
+
+    public void playUrl(Channel channel, String url) {
+        channel.fetchUrl(url);
+    }
+
+    public void seek(Channel channel, String time) {
+        double currentTime = Double.parseDouble(time);
+
+        channel.setCurrentTime(currentTime);
+    }
+
+    public Channel accessChannel(String id) {
+        Channel channel = play.getChannel(id);
+
+        if (channel != null) {
+            channel.resetSecondsLeft();
+
+            return channel;
+        }
+
+        return null;
     }
 
     private void log(String message) {

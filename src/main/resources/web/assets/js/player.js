@@ -1,41 +1,46 @@
-if (typeof(EventSource) !== "undefined") {
-    var source = new EventSource('/play-status');
-    source.onmessage = function (event) {
-        var obj = JSON.parse(event.data);
+var cookie = document.cookie.substr(document.cookie.indexOf("=") + 1);
 
-        var video = document.getElementById("myvideo");
+var webSocket = new WebSocket("ws://" + location.hostname + ":" + location.port + "/play-status");
 
-        if (video.src !== obj.url) {
-            video.src = obj.url;
-        }
+webSocket.onopen = function (event) {
+    webSocket.send("channel," + cookie);
+};
 
-        var diff = Math.abs(video.currentTime - obj.seconds);
+webSocket.onmessage = function (event) {
+    var obj = JSON.parse(event.data);
 
-        if (diff > 1) {
-            video.currentTime = obj.seconds;
-        }
+    var video = document.getElementById("myvideo");
 
-        if (obj.playing && video.paused) {
-            video.currentTime = obj.seconds;
+    if (video.src !== obj.url) {
+        video.src = obj.url;
+    }
 
-            video.play();
-        } else if (!obj.playing && !video.paused) {
-            video.currentTime = obj.seconds;
+    var diff = Math.abs(video.currentTime - obj.seconds);
 
-            video.pause();
-        }
-    };
-} else {
-    console.log("No event source");
-}
+    if (diff > 1) {
+        video.currentTime = obj.seconds;
+    }
+
+    if (obj.playing && video.paused) {
+        video.currentTime = obj.seconds;
+
+        video.play();
+    } else if (!obj.playing && !video.paused) {
+        video.currentTime = obj.seconds;
+
+        video.pause();
+    }
+};
+
+webSocket.onclose = function () {
+
+};
 
 function toggle(video) {
     video.paused ? video.play() : video.pause();
 }
 
 window.addEventListener("load", function () {
-    var cookie = document.cookie.substr(document.cookie.indexOf("=") + 1);
-
     var video = document.getElementById('myvideo');
 
     var url = document.getElementById('url');
@@ -50,7 +55,7 @@ window.addEventListener("load", function () {
 
     url.onkeydown = function (event) {
         if (event.which == 13) {
-            $.post("/play-url", {url: url.value});
+            webSocket.send("play-url," + this.value);
             this.value = ""
         }
     };
@@ -62,14 +67,14 @@ window.addEventListener("load", function () {
     });
 
     video.addEventListener('play', function () {
-        $.get("/play");
+        webSocket.send("play");
     });
 
     video.addEventListener('pause', function () {
-        $.get("/pause");
+        webSocket.send("pause");
     });
 
     video.addEventListener('seeked', function () {
-        $.get("/seek", {currentTime: this.currentTime});
+        webSocket.send("seek," + this.currentTime);
     });
 });
