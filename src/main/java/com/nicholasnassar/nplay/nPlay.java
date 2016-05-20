@@ -104,7 +104,7 @@ public class nPlay {
             if (command.equalsIgnoreCase("channels")) {
                 log("Channels:");
 
-                channels.keySet().forEach(this::log);
+                channels.entrySet().forEach(entry -> log(entry.getKey() + " - " + entry.getValue().getSecondsBeforeRemoval() + " seconds left"));
             } else if (command.equalsIgnoreCase("quit")) {
                 System.exit(0);
             }
