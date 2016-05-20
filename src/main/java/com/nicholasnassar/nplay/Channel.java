@@ -37,15 +37,18 @@ public class Channel {
 
         if (indefinite) {
             secondsBeforeRemoval = -1;
-        } else {
-            resetSecondsLeft();
         }
+
+        resetSecondsLeft();
+
 
         setUrl("");
     }
 
     public void resetSecondsLeft() {
-        secondsBeforeRemoval = SECONDS_BEFORE_REMOVAL;
+        if (secondsBeforeRemoval != -1) {
+            secondsBeforeRemoval = SECONDS_BEFORE_REMOVAL;
+        }
     }
 
     public void close() {
