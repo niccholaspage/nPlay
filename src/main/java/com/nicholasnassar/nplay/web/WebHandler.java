@@ -12,11 +12,7 @@ import java.util.Map;
 import static spark.Spark.*;
 
 public class WebHandler {
-    private final nPlay play;
-
     public WebHandler(nPlay play) {
-        this.play = play;
-
         port(8999);
 
         staticFileLocation("/web");
@@ -26,6 +22,7 @@ public class WebHandler {
         webSocket("/play-status", WebSocketHandler.class);
 
         get("/", (req, res) -> new ModelAndView(emptyMap, "index"), new JadeTemplateEngine());
+
         get("/channel/create", (req, res) -> {
             String channelId = play.createNewChannel();
 
@@ -39,6 +36,7 @@ public class WebHandler {
 
             return "";
         });
+
         get("/channel/:id", (req, res) -> {
             String id = req.params(":id");
 
@@ -63,6 +61,7 @@ public class WebHandler {
 
             return "";
         });
+
         get("/player", (req, res) -> {
             if (!play.hasChannel(req.cookie("channel"))) {
                 res.redirect("/");
@@ -72,8 +71,10 @@ public class WebHandler {
 
             return new ModelAndView(emptyMap, "player");
         }, new JadeTemplateEngine());
+
         get("/about", (req, res) -> new ModelAndView(emptyMap, "about"), new JadeTemplateEngine());
         get("/contact", (req, res) -> new ModelAndView(emptyMap, "contact"), new JadeTemplateEngine());
+        get("/error", (req, res) -> new ModelAndView(emptyMap, "error"), new JadeTemplateEngine());
     }
 
     public void stop() {
