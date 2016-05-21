@@ -33,7 +33,7 @@ webSocket.onmessage = function (event) {
 };
 
 webSocket.onclose = function () {
-    window.location = "/error";
+    document.getElementById("error").style.display = "block";
 };
 
 function toggle(video) {

@@ -5,7 +5,14 @@ block scripts
 
 block content
     h1 nPlay
-    p Welcome to nPlay
+    div.alert.alert-success#success(role='alert')
+        span.glyphicon.glyphicon-ok(aria-hidden='true')
+        span.sr-only Success:
+        |   Here's a success message.
+    div.alert.alert-danger#error(role='alert')
+        span.glyphicon.glyphicon-exclamation-sign(aria-hidden='true')
+        span.sr-only Error:
+        |   WebSocket closed! This is Luke's fault. Try refreshing the page.
     video#myvideo(controls, onclick='toggle(this)')
     p
         div.urlbox.input-group
