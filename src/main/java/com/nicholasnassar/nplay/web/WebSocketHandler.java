@@ -47,13 +47,15 @@ public class WebSocketHandler {
         }
 
         if (message.equals("play")) {
-            nPlay.play.play(channel);
+            channel.setPlaying(true);
         } else if (message.equals("pause")) {
-            nPlay.play.pause(channel);
+            channel.setPlaying(false);
         } else if (message.startsWith("seek,")) {
-            nPlay.play.seek(channel, message.substring(message.indexOf(",") + 1));
+            double currentTime = Double.parseDouble(message.substring(message.indexOf(",") + 1));
+
+            channel.setCurrentTime(currentTime);
         } else if (message.startsWith("play-url,")) {
-            nPlay.play.playUrl(channel, message.substring(message.indexOf(",") + 1));
+            channel.fetchUrl(message.substring(message.indexOf(",") + 1));
         }
     }
 

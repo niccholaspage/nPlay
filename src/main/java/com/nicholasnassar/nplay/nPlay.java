@@ -147,27 +147,8 @@ public class nPlay {
         return builder.toString();
     }
 
-
-    public void play(Channel channel) {
-        channel.setPlaying(true);
-    }
-
-    public void pause(Channel channel) {
-        channel.setPlaying(false);
-    }
-
-    public void playUrl(Channel channel, String url) {
-        channel.fetchUrl(url);
-    }
-
-    public void seek(Channel channel, String time) {
-        double currentTime = Double.parseDouble(time);
-
-        channel.setCurrentTime(currentTime);
-    }
-
     public Channel accessChannel(String id) {
-        Channel channel = play.getChannel(id);
+        Channel channel = getChannel(id);
 
         if (channel != null) {
             channel.resetSecondsLeft();
