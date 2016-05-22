@@ -66,7 +66,8 @@ public class WebSocketHandler {
 
                 if (channel != null) {
                     entry.getKey().getRemote().sendString("{\"url\": \"" + channel.getUrl() + "\", \"seconds\": "
-                            + channel.getCurrentTime() + ", \"playing\":" + channel.isPlaying() + "}");
+                            + channel.getCurrentTime() + ", \"playing\":" + channel.isPlaying() + ", \"status\": \""
+                            + channel.getStatus() + "\"}");
                 } else {
                     entry.getKey().getRemote().sendString("{}");
                 }

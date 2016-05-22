@@ -30,10 +30,20 @@ webSocket.onmessage = function (event) {
 
         video.pause();
     }
+
+    var success = document.getElementById("success");
+
+    if (obj.status.length != 0) {
+        document.getElementById("success").textContent = obj.status;
+
+        success.style.visibility = "visible";
+    } else {
+        success.style.visibility = "hidden";
+    }
 };
 
 webSocket.onclose = function () {
-    document.getElementById("error").style.display = "block";
+    document.getElementById("error").style.visibility = "visible";
 };
 
 function toggle(video) {

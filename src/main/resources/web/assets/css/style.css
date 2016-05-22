@@ -1,5 +1,5 @@
 body {
-  padding-top: 50px;
+  padding-top: 10px;
 }
 .template {
   padding: 40px 15px;
@@ -17,5 +17,5 @@ body {
 #success {
   width: 60%;
   margin: auto;
-  display: none;
+  visibility: hidden;
 }

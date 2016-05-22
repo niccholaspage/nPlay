@@ -16,6 +16,8 @@ public class Channel {
 
     private final JBrowserDriver browser;
 
+    private String status;
+
     private String url;
 
     private double currentTime;
@@ -45,6 +47,8 @@ public class Channel {
 
         hostOnly = false;
 
+        status = "";
+
         setUrl("");
     }
 
@@ -66,6 +70,18 @@ public class Channel {
         this.secondsBeforeRemoval = secondsBeforeRemoval;
     }
 
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public String getUrl() {
+        return url;
+    }
+
     private void setUrl(String url) {
         this.url = url;
 
@@ -80,10 +96,14 @@ public class Channel {
         }
 
         if (url.isEmpty()) {
+            setStatus("");
+
             setUrl("");
 
             return;
         }
+
+        setStatus("Fetching video...");
 
         //Empty video for now.
         setUrl("");
@@ -100,6 +120,8 @@ public class Channel {
                     con.setRequestMethod("HEAD");
 
                     if (con.getContentType().contains("video/")) {
+                        setStatus("");
+
                         setUrl(url);
 
                         return;
@@ -109,6 +131,8 @@ public class Channel {
                 }
 
                 try {
+                    setStatus("Fetching video from URL...");
+
                     browser.get(url);
 
                     try {
@@ -129,22 +153,28 @@ public class Channel {
 
                     List<WebElement> elements = browser.findElements(By.tagName("video"));
 
-                    WebElement first = elements.get(0);
+                    if (!elements.isEmpty()) {
+                        WebElement first = elements.get(0);
 
-                    if (first != null) {
-                        String source = null;
+                        if (first != null) {
+                            String source = null;
 
-                        if (first.getAttribute("src") != null) {
-                            source = first.getAttribute("src");
+                            if (first.getAttribute("src") != null) {
+                                source = first.getAttribute("src");
 
-                            setUrl(getSource(validator.isValid(source), url, source));
-                        } else {
-                            WebElement sourceTag = first.findElements(By.tagName("source")).get(0);
-
-                            if (sourceTag != null) {
-                                source = sourceTag.getAttribute("src");
+                                setStatus("");
 
                                 setUrl(getSource(validator.isValid(source), url, source));
+                            } else {
+                                WebElement sourceTag = first.findElements(By.tagName("source")).get(0);
+
+                                if (sourceTag != null) {
+                                    source = sourceTag.getAttribute("src");
+
+                                    setStatus("");
+
+                                    setUrl(getSource(validator.isValid(source), url, source));
+                                }
                             }
                         }
                     }
@@ -172,10 +202,6 @@ public class Channel {
         } else {
             return source;
         }
-    }
-
-    public String getUrl() {
-        return url;
     }
 
     public double getCurrentTime() {
