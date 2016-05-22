@@ -38,7 +38,7 @@ public class nPlay {
         browser = new AsyncConstruction<JBrowserDriver>() {
             @Override
             public JBrowserDriver create() {
-                return new JBrowserDriver(Settings.builder().timezone(Timezone.AMERICA_NEWYORK).build());
+                return new JBrowserDriver(Settings.builder().timezone(Timezone.AMERICA_NEWYORK).blockAds(true).build());
             }
         };
 

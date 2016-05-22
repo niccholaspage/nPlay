@@ -99,7 +99,7 @@ public class Channel {
             return;
         }
 
-        setStatus("Fetching video...");
+        setStatus("i:Fetching video...");
 
         //Empty video for now.
         setUrl("");
@@ -127,7 +127,7 @@ public class Channel {
                 }
 
                 try {
-                    setStatus("Fetching video from URL...");
+                    setStatus("i:Fetching video from URL...");
 
                     browser.get(url);
 
@@ -146,7 +146,7 @@ public class Channel {
                             }
                         }
                     } catch (Exception e) {
-
+                        setStatus("e:Problem with link handlers. Oops.");
                     }
 
                     List<WebElement> elements = browser.findElements(By.tagName("video"));
@@ -178,6 +178,8 @@ public class Channel {
                     }
                 } catch (Exception e) {
                     e.printStackTrace();
+
+                    setStatus("e:Error fetching video! Sorry :(");
                 }
             }
             ).start();

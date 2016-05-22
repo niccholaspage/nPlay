@@ -37,30 +37,34 @@ webSocket.onmessage = function (event) {
         video.pause();
     }
 
-    var status = document.getElementById("status");
-
-    if (obj.status.length != 0) {
-        status.style.visibility = "visible";
-
-        status.setAttribute("class", "alert alert-success");
-
-        status.textContent = obj.status;
-
-        status.style.visibility = "visible";
-    } else {
-        status.style.visibility = "hidden";
-    }
+    setStatus(obj.status);
 };
 
 webSocket.onclose = function () {
+    setStatus("e:WebSocket closed! This is Luke's fault. Try refreshing the page.");
+};
+
+function setStatus(message) {
     var status = document.getElementById("status");
 
+    if (message.length == 0) {
+        status.style.visibility = "hidden";
+
+        return;
+    }
+
+    var type = message.substring(0, 1);
+
+    if (type == "i") {
+        status.setAttribute("class", "alert alert-info");
+    } else {
+        status.setAttribute("class", "alert alert-danger");
+    }
+
+    status.textContent = message.substring(2);
+
     status.style.visibility = "visible";
-
-    status.setAttribute("class", "alert alert-danger");
-
-    status.textContent = "WebSocket closed! This is Luke's fault. Try refreshing the page.";
-};
+}
 
 function toggle(video) {
     video.paused ? video.play() : video.pause();
