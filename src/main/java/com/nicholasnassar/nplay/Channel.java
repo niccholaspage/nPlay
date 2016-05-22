@@ -26,8 +26,6 @@ public class Channel {
 
     private double secondsBeforeRemoval;
 
-    private boolean hostOnly;
-
     private static final int SECONDS_BEFORE_REMOVAL = 1 * 60;
 
     public Channel(nPlay play, JBrowserDriver browser) {
@@ -44,8 +42,6 @@ public class Channel {
         }
 
         resetSecondsLeft();
-
-        hostOnly = false;
 
         status = "";
 
@@ -224,13 +220,5 @@ public class Channel {
         }
 
         this.playing = playing;
-    }
-
-    public boolean isHostOnly() {
-        return hostOnly;
-    }
-
-    public void setHostOnly(boolean hostOnly) {
-        this.hostOnly = hostOnly;
     }
 }
