@@ -14,7 +14,7 @@ import java.util.Map;
 
 @WebSocket
 public class WebSocketHandler {
-    private static Map<Session, String> sessionChannelMap = new HashMap<>();
+    private static final Map<Session, String> sessionChannelMap = new HashMap<>();
 
     @OnWebSocketConnect
     public void onConnect(Session user) throws Exception {
