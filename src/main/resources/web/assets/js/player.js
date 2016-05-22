@@ -31,19 +31,29 @@ webSocket.onmessage = function (event) {
         video.pause();
     }
 
-    var success = document.getElementById("success");
+    var status = document.getElementById("status");
 
     if (obj.status.length != 0) {
-        document.getElementById("success").textContent = obj.status;
+        status.style.visibility = "visible";
 
-        success.style.visibility = "visible";
+        status.setAttribute("class", "alert alert-success");
+
+        status.textContent = obj.status;
+
+        status.style.visibility = "visible";
     } else {
-        success.style.visibility = "hidden";
+        status.style.visibility = "hidden";
     }
 };
 
 webSocket.onclose = function () {
-    document.getElementById("error").style.visibility = "visible";
+    var status = document.getElementById("status");
+
+    status.style.visibility = "visible";
+
+    status.setAttribute("class", "alert alert-danger");
+
+    status.textContent = "WebSocket closed! This is Luke's fault. Try refreshing the page.";
 };
 
 function toggle(video) {

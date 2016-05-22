@@ -142,6 +142,8 @@ public class Channel {
 
                         for (Map.Entry<String, LinkHandler> handler : play.getHandlers().entrySet()) {
                             if (baseUrl.contains(handler.getKey())) {
+                                setStatus("");
+
                                 setUrl(handler.getValue().getVideo(browser));
 
                                 return;
