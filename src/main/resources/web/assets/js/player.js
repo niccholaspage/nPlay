@@ -57,8 +57,6 @@ function setStatus(message) {
         return;
     }
 
-    var type = message.substring(0, 1);
-
     snackbarContainer.MaterialSnackbar.showSnackbar({
         message: message.substring(2)
     });
@@ -84,7 +82,10 @@ window.addEventListener("load", function () {
     url.onkeydown = function (event) {
         if (event.which == 13) {
             webSocket.send("play-url," + this.value);
-            this.value = ""
+
+            this.value = "";
+
+            document.getElementById('url-container').MaterialTextfield.checkDirty();
         }
     };
 
