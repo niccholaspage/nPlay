@@ -59,6 +59,17 @@ public class WebSocketHandler {
         }
     }
 
+    public static void sendStatusMessage(String channel, String message) {
+        sessionChannelMap.entrySet().stream().filter(entry -> entry.getValue() != null && entry.getKey().isOpen()
+                && entry.getValue().equals(channel)).forEach(entry -> {
+            try {
+                entry.getKey().getRemote().sendString("{\"status\": \"" + message + "\"}");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+        });
+    }
+
     public static void sendStatusUpdate() {
         sessionChannelMap.entrySet().stream().filter(entry -> entry.getValue() != null && entry.getKey().isOpen()).forEach(entry -> {
             try {
@@ -66,8 +77,7 @@ public class WebSocketHandler {
 
                 if (channel != null) {
                     entry.getKey().getRemote().sendString("{\"url\": \"" + channel.getUrl() + "\", \"seconds\": "
-                            + channel.getCurrentTime() + ", \"playing\":" + channel.isPlaying() + ", \"status\": \""
-                            + channel.getStatus() + "\"}");
+                            + channel.getCurrentTime() + ", \"playing\":" + channel.isPlaying() + "}");
                 } else {
                     entry.getKey().getRemote().sendString("{}");
                 }

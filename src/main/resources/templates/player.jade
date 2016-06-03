@@ -4,12 +4,13 @@ block scripts
     script(src='/assets/js/player.min.js')
 
 block content
-    h1 nPlay
-    div.alert#status(role='alert') Status message
     video#myvideo(controls, onclick='toggle(this)')
     p
-        div.urlbox.input-group
-            span#addon.input-group-addon URL
-            input#url.form-control(type='text', placeholder='Direct video link or YouTube!', aria-describedby='addon')
+        div.mdl-textfield.mdl-js-textfield.mdl-textfield--floating-label
+            input#url.mdl-textfield__input(type='text')
+            label.mdl-textfield__label(for='url') Direct video or YouTube URL...
     p= 'Share this link with your friends: '
         a#channel(href='#') Channel Link
+    div#snackbar.mdl-js-snackbar.mdl-snackbar
+        div.mdl-snackbar__text
+        button.mdl-snackbar__action(type='button')

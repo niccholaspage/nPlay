@@ -1,6 +1,7 @@
 package com.nicholasnassar.nplay;
 
 import com.machinepublishers.jbrowserdriver.JBrowserDriver;
+import com.nicholasnassar.nplay.web.WebSocketHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
 import org.openqa.selenium.By;
@@ -16,7 +17,7 @@ public class Channel {
 
     private final JBrowserDriver browser;
 
-    private String status;
+    private final String name;
 
     private String url;
 
@@ -28,22 +29,22 @@ public class Channel {
 
     private static final int SECONDS_BEFORE_REMOVAL = 1 * 60;
 
-    public Channel(nPlay play, JBrowserDriver browser) {
-        this(play, browser, false);
+    public Channel(nPlay play, JBrowserDriver browser, String name) {
+        this(play, browser, name, false);
     }
 
-    public Channel(nPlay play, JBrowserDriver browser, boolean indefinite) {
+    public Channel(nPlay play, JBrowserDriver browser, String name, boolean indefinite) {
         this.play = play;
 
         this.browser = browser;
+
+        this.name = name;
 
         if (indefinite) {
             secondsBeforeRemoval = -1;
         }
 
         resetSecondsLeft();
-
-        status = "";
 
         setUrl("");
     }
@@ -66,14 +67,6 @@ public class Channel {
         this.secondsBeforeRemoval = secondsBeforeRemoval;
     }
 
-    public String getStatus() {
-        return status;
-    }
-
-    public void setStatus(String status) {
-        this.status = status;
-    }
-
     public String getUrl() {
         return url;
     }
@@ -86,20 +79,24 @@ public class Channel {
         playing = !url.isEmpty();
     }
 
+    public void sendStatus(String status) {
+        WebSocketHandler.sendStatusMessage(name, status);
+    }
+
     public void fetchUrl(String url) {
         if (url == null) {
             return;
         }
 
         if (url.isEmpty()) {
-            setStatus("");
+            sendStatus("");
 
             setUrl("");
 
             return;
         }
 
-        setStatus("i:Fetching video...");
+        sendStatus("i:Fetching video...");
 
         //Empty video for now.
         setUrl("");
@@ -116,7 +113,7 @@ public class Channel {
                     con.setRequestMethod("HEAD");
 
                     if (con.getContentType().contains("video/")) {
-                        setStatus("");
+                        sendStatus("");
 
                         setUrl(url);
 
@@ -127,7 +124,7 @@ public class Channel {
                 }
 
                 try {
-                    setStatus("i:Fetching video from URL...");
+                    sendStatus("i:Fetching video from URL...");
 
                     browser.get(url);
 
@@ -138,7 +135,7 @@ public class Channel {
 
                         for (Map.Entry<String, LinkHandler> handler : play.getHandlers().entrySet()) {
                             if (baseUrl.contains(handler.getKey())) {
-                                setStatus("");
+                                sendStatus("");
 
                                 setUrl(handler.getValue().getVideo(browser));
 
@@ -146,7 +143,7 @@ public class Channel {
                             }
                         }
                     } catch (Exception e) {
-                        setStatus("e:Problem with link handlers. Oops.");
+                        sendStatus("e:Problem with link handlers. Oops.");
                     }
 
                     List<WebElement> elements = browser.findElements(By.tagName("video"));
@@ -160,7 +157,7 @@ public class Channel {
                             if (first.getAttribute("src") != null) {
                                 source = first.getAttribute("src");
 
-                                setStatus("");
+                                sendStatus("");
 
                                 setUrl(getSource(validator.isValid(source), url, source));
                             } else {
@@ -169,7 +166,7 @@ public class Channel {
                                 if (sourceTag != null) {
                                     source = sourceTag.getAttribute("src");
 
-                                    setStatus("");
+                                    sendStatus("");
 
                                     setUrl(getSource(validator.isValid(source), url, source));
                                 }
@@ -179,7 +176,7 @@ public class Channel {
                 } catch (Exception e) {
                     e.printStackTrace();
 
-                    setStatus("e:Error fetching video! Sorry :(");
+                    sendStatus("e:Error fetching video! Sorry :(");
                 }
             }
             ).start();

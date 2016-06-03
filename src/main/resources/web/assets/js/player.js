@@ -15,6 +15,12 @@ webSocket.onopen = function (event) {
 webSocket.onmessage = function (event) {
     var obj = JSON.parse(event.data);
 
+    if (obj.status) {
+        setStatus(obj.status);
+
+        return;
+    }
+
     var video = document.getElementById("myvideo");
 
     if (video.src !== obj.url) {
@@ -36,8 +42,6 @@ webSocket.onmessage = function (event) {
 
         video.pause();
     }
-
-    setStatus(obj.status);
 };
 
 webSocket.onclose = function () {
@@ -45,25 +49,19 @@ webSocket.onclose = function () {
 };
 
 function setStatus(message) {
-    var status = document.getElementById("status");
+    var snackbarContainer = document.querySelector('#snackbar');
 
     if (message.length == 0) {
-        status.style.visibility = "hidden";
+        snackbarContainer.MaterialSnackbar.cleanup_();
 
         return;
     }
 
     var type = message.substring(0, 1);
 
-    if (type == "i") {
-        status.setAttribute("class", "alert alert-info");
-    } else {
-        status.setAttribute("class", "alert alert-danger");
-    }
-
-    status.textContent = message.substring(2);
-
-    status.style.visibility = "visible";
+    snackbarContainer.MaterialSnackbar.showSnackbar({
+        message: message.substring(2)
+    });
 }
 
 function toggle(video) {

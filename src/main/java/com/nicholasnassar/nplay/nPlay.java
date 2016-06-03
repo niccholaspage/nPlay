@@ -42,7 +42,7 @@ public class nPlay {
             }
         };
 
-        channels.put("main", new Channel(this, browser.get(), true));
+        channels.put("main", new Channel(this, browser.get(), "main", true));
 
         random = new Random();
 
@@ -130,7 +130,7 @@ public class nPlay {
             id = generateChannelId();
         }
 
-        Channel channel = new Channel(this, browser.get());
+        Channel channel = new Channel(this, browser.get(), id);
 
         channels.put(id, channel);
 
