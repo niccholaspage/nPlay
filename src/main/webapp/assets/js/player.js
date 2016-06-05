@@ -6,12 +6,6 @@ webSocket.onopen = function (event) {
     webSocket.send("channel," + cookie);
 };
 
-/**
- *
- * @param event WebSocket event
- * @param obj.seconds   Current video time
- * @param obj.playing   If the video is currently playing or not
- */
 webSocket.onmessage = function (event) {
     var obj = JSON.parse(event.data);
 
