@@ -56,7 +56,11 @@ public class Channel {
     }
 
     public void close() {
-        browser.quit();
+        try {
+            browser.quit();
+        } catch (Exception e) {
+
+        }
     }
 
     public double getSecondsBeforeRemoval() {
