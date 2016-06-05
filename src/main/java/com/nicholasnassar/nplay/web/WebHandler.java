@@ -21,7 +21,9 @@ public class WebHandler {
 
         webSocket("/play-status", WebSocketHandler.class);
 
-        get("/", (req, res) -> new ModelAndView(emptyMap, "index"), new JadeTemplateEngine());
+        JadeTemplateEngine jade = new JadeTemplateEngine();
+
+        get("/", (req, res) -> new ModelAndView(emptyMap, "index"), jade);
 
         get("/channel/create", (req, res) -> {
             String channelId = play.createNewChannel();
@@ -70,11 +72,11 @@ public class WebHandler {
             }
 
             return new ModelAndView(emptyMap, "player");
-        }, new JadeTemplateEngine());
+        }, jade);
 
-        get("/about", (req, res) -> new ModelAndView(emptyMap, "about"), new JadeTemplateEngine());
-        get("/contact", (req, res) -> new ModelAndView(emptyMap, "contact"), new JadeTemplateEngine());
-        get("/error", (req, res) -> new ModelAndView(emptyMap, "error"), new JadeTemplateEngine());
+        get("/about", (req, res) -> new ModelAndView(emptyMap, "about"), jade);
+        get("/contact", (req, res) -> new ModelAndView(emptyMap, "contact"), jade);
+        get("/error", (req, res) -> new ModelAndView(emptyMap, "error"), jade);
     }
 
     public void stop() {
