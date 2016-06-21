@@ -1,23 +1,26 @@
 package com.nicholasnassar.nplay;
 
-import com.machinepublishers.jbrowserdriver.JBrowserDriver;
 import com.nicholasnassar.nplay.web.WebSocketHandler;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.validator.routines.UrlValidator;
-import org.openqa.selenium.By;
-import org.openqa.selenium.WebElement;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
 
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public class Channel {
     private final nPlay play;
 
-    private final JBrowserDriver browser;
-
     private final String name;
+
+    private final ExecutorService executor;
 
     private String url;
 
@@ -29,16 +32,16 @@ public class Channel {
 
     private static final int SECONDS_BEFORE_REMOVAL = 1 * 60;
 
-    public Channel(nPlay play, JBrowserDriver browser, String name) {
-        this(play, browser, name, false);
+    public Channel(nPlay play, String name) {
+        this(play, name, false);
     }
 
-    public Channel(nPlay play, JBrowserDriver browser, String name, boolean indefinite) {
+    public Channel(nPlay play, String name, boolean indefinite) {
         this.play = play;
 
-        this.browser = browser;
-
         this.name = name;
+
+        executor = Executors.newSingleThreadExecutor();
 
         if (indefinite) {
             secondsBeforeRemoval = -1;
@@ -57,9 +60,17 @@ public class Channel {
 
     public void close() {
         try {
-            browser.quit();
-        } catch (Exception e) {
+            executor.shutdown();
 
+            executor.awaitTermination(5, TimeUnit.SECONDS);
+        } catch (InterruptedException e) {
+            System.out.println("Interrupted tasks!");
+        } finally {
+            if (!executor.isTerminated()) {
+                System.out.println("Still not terminated");
+            }
+
+            executor.shutdownNow();
         }
     }
 
@@ -108,7 +119,7 @@ public class Channel {
         UrlValidator validator = new UrlValidator(new String[]{"http", "https"});
 
         if (validator.isValid(url)) {
-            new Thread(() -> {
+            executor.submit(() -> {
                 try {
                     HttpURLConnection.setFollowRedirects(false);
 
@@ -130,7 +141,7 @@ public class Channel {
                 try {
                     sendStatus("i:Fetching video from URL...");
 
-                    browser.get(url);
+                    Document document = Jsoup.connect(url).get();
 
                     try {
                         URL tempUrl = new URL(url);
@@ -141,34 +152,35 @@ public class Channel {
                             if (baseUrl.contains(handler.getKey())) {
                                 sendStatus("");
 
-                                setUrl(handler.getValue().getVideo(browser));
+                                setUrl(handler.getValue().getVideo(document));
 
                                 return;
                             }
                         }
                     } catch (Exception e) {
+                        e.printStackTrace();
                         sendStatus("e:Problem with link handlers. Oops.");
                     }
 
-                    List<WebElement> elements = browser.findElements(By.tagName("video"));
+                    List<Element> elements = document.getElementsByTag("video");
 
                     if (!elements.isEmpty()) {
-                        WebElement first = elements.get(0);
+                        Element first = elements.get(0);
 
                         if (first != null) {
                             String source = null;
 
-                            if (first.getAttribute("src") != null) {
-                                source = first.getAttribute("src");
+                            if (first.attr("src") != null) {
+                                source = first.attr("src");
 
                                 sendStatus("");
 
                                 setUrl(getSource(validator.isValid(source), url, source));
                             } else {
-                                WebElement sourceTag = first.findElements(By.tagName("source")).get(0);
+                                Element sourceTag = first.getElementsByTag("source").get(0);
 
                                 if (sourceTag != null) {
-                                    source = sourceTag.getAttribute("src");
+                                    source = sourceTag.attr("src");
 
                                     sendStatus("");
 
@@ -182,8 +194,7 @@ public class Channel {
 
                     sendStatus("e:Error fetching video! Sorry :(");
                 }
-            }
-            ).start();
+            });
         }
     }
 

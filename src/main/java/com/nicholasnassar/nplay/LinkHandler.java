@@ -1,8 +1,8 @@
 package com.nicholasnassar.nplay;
 
-import com.machinepublishers.jbrowserdriver.JBrowserDriver;
+import org.jsoup.nodes.Document;
 
 @FunctionalInterface
 public interface LinkHandler {
-    String getVideo(JBrowserDriver browser);
+    String getVideo(Document document);
 }

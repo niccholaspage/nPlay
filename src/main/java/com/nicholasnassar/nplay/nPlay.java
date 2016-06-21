@@ -1,11 +1,12 @@
 package com.nicholasnassar.nplay;
 
-import com.machinepublishers.jbrowserdriver.JBrowserDriver;
-import com.machinepublishers.jbrowserdriver.Settings;
-import com.machinepublishers.jbrowserdriver.Timezone;
 import com.nicholasnassar.nplay.web.WebHandler;
 import com.nicholasnassar.nplay.web.WebSocketHandler;
+import org.json.JSONObject;
+import org.jsoup.nodes.Element;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -15,8 +16,6 @@ public class nPlay {
     private final Map<String, LinkHandler> handlers;
 
     private final Map<String, Channel> channels;
-
-    private final AsyncConstruction<JBrowserDriver> browser;
 
     private final Random random;
 
@@ -35,18 +34,45 @@ public class nPlay {
 
         channels = new HashMap<>();
 
-        browser = new AsyncConstruction<JBrowserDriver>() {
-            @Override
-            public JBrowserDriver create() {
-                return new JBrowserDriver(Settings.builder().timezone(Timezone.AMERICA_NEWYORK).blockAds(true).build());
-            }
-        };
-
-        channels.put("main", new Channel(this, browser.get(), "main", true));
+        channels.put("main", new Channel(this, "main", true));
 
         random = new Random();
 
         handlers = new HashMap<>();
+
+        handlers.put("youtube.com", document -> {
+            String videoUrl = "";
+
+            for (Element element : document.getElementsByTag("script")) {
+                String html = element.html();
+
+                if (html.startsWith("var ytplayer = ytplayer")) {
+                    int argsStart = html.indexOf("\"args\":{") + 7;
+
+                    String args = html.substring(argsStart, html.indexOf("},", argsStart) + 1);
+
+                    JSONObject json = new JSONObject(args);
+
+                    try {
+                        String urlEncoded = URLDecoder.decode(json.getString("url_encoded_fmt_stream_map"), "UTF-8");
+
+                        System.out.println(urlEncoded);
+
+                        int urlStart = urlEncoded.indexOf("url=") + 4;
+
+                        videoUrl = urlEncoded.substring(urlStart, urlEncoded.indexOf(";", urlStart));
+
+                        videoUrl = videoUrl.replace(",type", "&type");
+
+                        System.out.println(videoUrl);
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+
+            return videoUrl;
+        });
 
         this.webHandler = new WebHandler(this);
 
@@ -130,7 +156,7 @@ public class nPlay {
             id = generateChannelId();
         }
 
-        Channel channel = new Channel(this, browser.get(), id);
+        Channel channel = new Channel(this, id);
 
         channels.put(id, channel);
 
